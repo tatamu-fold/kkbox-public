@@ -1,32 +1,54 @@
 name: kkbox
 
+
 on:
   schedule:
     - cron: '*/15 * * * *'
+
   workflow_dispatch:
 
+
+# allow parallel workers
+concurrency:
+  group: kkbox-${{ github.run_id }}
+  cancel-in-progress: false
+
+
+
 jobs:
-  kkbox:
+
+  scanner:
+
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.8' # Specify the Python version you need
-    
-      - name: Run apt and pip
-        run: |
-          sudo apt update
-          sudo apt install p7zip-full
-          sudo apt install curl
-          pip install requests
-          pip install pytz
-          pip install python-telegram-bot
-          pip install PyGithub
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+
+
+    - name: Install dependencies
+      run: |
+
+        sudo apt update
+
+        pip install requests
+        pip install pytz
+        pip install python-telegram-bot
+        pip install PyGithub
+
+        pip install paddleocr
+        pip install paddlepaddle
+        pip install pillow
 
       - name: Clone private repo
         env:
@@ -35,13 +57,17 @@ jobs:
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/iamCristYE/kkbox.git
           cd kkbox
 
+    - name: Run scanner
 
-      - name: Run Python script
-        run: |
-          cd kkbox
-          python kkbox.py
-        env:
-            github_token: ${{ secrets.PRIVATE_REPO_TOKEN }}
-            bot_token: ${{ secrets.BOT_TOKEN }}
-            chat_id: ${{ secrets.CHAT_ID_COVER }}
+      env:
 
+        github_token: ${{ secrets.PRIVATE_REPO_TOKEN }}
+
+        bot_token: ${{ secrets.BOT_TOKEN }}
+
+        chat_id: ${{ secrets.CHAT_ID }}
+
+
+      run:
+        cd kkbox
+        python kkbox.py
