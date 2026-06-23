@@ -45,7 +45,6 @@ jobs:
         pip install pytz
         pip install python-telegram-bot
         pip install PyGithub
-        pip install numpy
         pip install paddleocr
         pip install paddlepaddle
         pip install pillow
