@@ -50,10 +50,10 @@ jobs:
         pip install paddlepaddle
         pip install pillow
 
-      - name: Clone private repo
-        env:
+    - name: Clone private repo
+      env:
           GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
-        run: |
+      run: |
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/iamCristYE/kkbox.git
           cd kkbox
 
