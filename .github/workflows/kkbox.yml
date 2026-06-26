@@ -1,28 +1,39 @@
-name: kkbox
+name: kkbox-worker
 
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'
 
   workflow_dispatch:
 
+    inputs:
 
-# allow parallel workers
+      start:
+
+        required: true
+        type: string
+
+
+
 concurrency:
-  group: kkbox-${{ github.run_id }}
+
+  group: kkbox-worker-${{ github.event.inputs.start }}
+
   cancel-in-progress: false
 
 
 
 jobs:
 
-  scanner:
+
+  scan:
+
 
     runs-on: ubuntu-latest
 
 
+
     steps:
+
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -30,13 +41,17 @@ jobs:
 
 
     - name: Setup Python
+
       uses: actions/setup-python@v5
+
       with:
+
         python-version: "3.10"
 
 
 
     - name: Install dependencies
+
       run: |
 
         sudo apt update
@@ -49,12 +64,20 @@ jobs:
         pip install paddlepaddle
         pip install pillow
 
+
+
+
     - name: Clone private repo
+
       env:
-          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+
+        TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+
       run: |
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/iamCristYE/kkbox.git
-          cd kkbox
+
+        git clone https://x-access-token:${TOKEN}@github.com/iamCristYE/kkbox.git
+
+
 
     - name: Run scanner
 
@@ -64,9 +87,9 @@ jobs:
 
         bot_token: ${{ secrets.BOT_TOKEN }}
 
-        chat_id: ${{ secrets.CHAT_ID }}
-
-
       run: |
+
+
         cd kkbox
-        python kkbox.py
+
+        python kkbox.py ${{ github.event.inputs.start }}

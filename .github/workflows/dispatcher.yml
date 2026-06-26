@@ -1,0 +1,67 @@
+name: kkbox-dispatcher
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: '*/30 * * * *'
+
+
+permissions:
+  contents: write
+  actions: write
+
+
+concurrency:
+  group: kkbox-dispatcher
+  cancel-in-progress: false
+
+
+jobs:
+
+  dispatch:
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+
+    - name: Read kkbox.json
+      id: json
+      run: |
+
+        START=$(python3 - <<EOF
+        import json
+        print(json.load(open("kkbox.json"))["next"])
+        EOF
+        )
+
+        echo "start=$START" >> $GITHUB_OUTPUT
+
+
+    - name: Trigger worker
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      run: |
+
+        gh workflow run kkbox.yml \
+          --ref main \
+          -f start=${{ steps.json.outputs.start }}
+
+
+    - name: Wait 15 minutes
+      run: sleep 900
+
+
+    - name: Trigger myself again
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      run: |
+
+        gh workflow run dispatcher.yml --ref main
