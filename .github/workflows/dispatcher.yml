@@ -30,13 +30,23 @@ jobs:
       uses: actions/checkout@v4
 
 
+    - name: Clone private repo
+
+      env:
+
+        TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+
+      run: |
+
+        git clone https://x-access-token:${TOKEN}@github.com/tatamu-fold/kkbox.git
+
     - name: Read kkbox.json
       id: json
       run: |
 
         START=$(python3 - <<EOF
         import json
-        print(json.load(open("kkbox.json"))["next"])
+        print(json.load(open("kkbox/kkbox.json"))["next"])
         EOF
         )
 
